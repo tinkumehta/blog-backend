@@ -9,11 +9,14 @@ export const register = async (req, res) => {
 
     const {username, password} = req.body;
     if (!username || !password) {
-        res.status(201).json({error : "username and password is required"})
+        res.status(401).json({error : "username and password is required"})
     }
     const hash = await bcrypt.hash(password, 10);
     try {
         const user = await User.create({username, password: hash});
+        if (!user) {
+            res.status(401).json({error : "register is falied "})
+        }
         res
         .status(201)
         .json(
@@ -27,11 +30,15 @@ export const register = async (req, res) => {
 export const login = async (req, res) => {
     const {username, password} = req.body;
 
+    if(!username || ! password){
+        res.status(401).json({error : "username and password is required"})
+    }
+
     const user = await User.findOne({username});
     if (!user || !(await bcrypt.compare(password, user.password))) {
         res
         .status(401)
-        .json({error : 'Invalid credentials'})
+        .json({error : 'username and password is not correct '})
     }
 
     const token = jwt.sign({userId : user._id}, process.env.JWT_SECRET);

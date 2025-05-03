@@ -2,7 +2,14 @@ import Post from '../models/Post.models.js'
 
 export const createPost = async (req, res) => {
     const {title, content} = req.body;
+    if (!title || !content) {
+        res.status(401).json({error : "title and content is required"})
+    }
+
     const post = await Post.create({title, content, author : req.userId});
+    if (!post) {
+        res.status(401).json({error : "falied to post "})
+    }
     res
     .status(201)
     .json(post)
@@ -43,5 +50,5 @@ export const deletePost = async (req, res) => {
     await post.deleteOne();
     res
     .status(201)
-    .json({message : 'Post deleted'})
+    .json({message : 'Post deleted '})
 }

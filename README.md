@@ -16,3 +16,8 @@ blog-api/ \
 |__ .gitignore\
 ├── server.js\
 ├── package.json
+
+
+## TODO
+ - Add logout, changepassword, avatar, coverImage, change avatar cover functionality
+ - Add post in cloudinary
