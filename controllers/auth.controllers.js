@@ -1,46 +1,59 @@
-import User from "../models/User.models.js";
-import bcrypt from 'bcrypt';
+import {User} from "../models/User.models.js";
 import jwt from 'jsonwebtoken'
+import { ApiError } from "../utils/ApiError.js";
+import {ApiResponse} from "../utils/ApiResponse.js"
+import { asyncHandler } from "../utils/asyncHandler.js";
 
-export const register = async (req, res) => {
+export const register = asyncHandler(async (req, res) => {
     // username, password
     // hash password
     // create user
 
     const {username, password} = req.body;
-    if (!username || !password) {
-        res.status(401).json({error : "username and password is required"})
+    if(!username || ! password){
+        throw new ApiError(400, "username and password is required")
     }
-    const hash = await bcrypt.hash(password, 10);
-    try {
-        const user = await User.create({username, password: hash});
+   
+     const exitedUser = await User.findOne({
+        $or : [{username}]
+     })
+     if (exitedUser) {
+        throw new ApiError(401, "User already exits");
+     }
+
+        const user = await User.create({username, password });
         if (!user) {
-            res.status(401).json({error : "register is falied "})
+            throw new ApiError(500, "user register is falied")
+        }
+        const createdUser = await User.findById(user._id).select("-password")
+
+        if (!createdUser) {
+            throw new ApiError(500, "Something went wrong while user register")
         }
         res
         .status(201)
         .json(
-            {message : 'User created succefully', userId : user._id}
+           new ApiResponse(201, createdUser, "user created succefully")
         )
-    } catch (error) {
-        res.status(400).json({error : "Username taken"})
-    }
-}
+    
+})
 
-export const login = async (req, res) => {
+export const login = asyncHandler(async (req, res) => {
     const {username, password} = req.body;
 
     if(!username || ! password){
-        res.status(401).json({error : "username and password is required"})
+        throw new ApiError(400, "username and password is required")
     }
 
     const user = await User.findOne({username});
     if (!user || !(await bcrypt.compare(password, user.password))) {
-        res
-        .status(401)
-        .json({error : 'username and password is not correct '})
+        throw new ApiError(401, "user name and password is not correct")
     }
 
     const token = jwt.sign({userId : user._id}, process.env.JWT_SECRET);
-    res.json({token});
-}
+    res
+    .status(201)
+    .json(
+        new ApiResponse(200, token, "user login succesfully")
+    );
+})
