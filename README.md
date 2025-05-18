@@ -10,8 +10,12 @@ blog-api/ \
 ├── routes/\
 │   ├── authRoutes.js\
 │   └── postRoutes.js\
-├── middleware/\
+├── middleware\
 │   └── authMiddleware.js\
+|── utils \
+|  └── ApiError.js\
+|  └── ApiResponse.js\
+|  └── asyncHandler.js\
 ├── .env\
 |__ .gitignore\
 ├── server.js\
